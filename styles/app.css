@@ -1,0 +1,40 @@
+* {
+  margin: 0;
+  outline: none;
+  padding: 0;
+}
+
+html, body {
+  font: normal 14px/1.4 'Segoe UI', 'Helvetica', 'Arial', sans-serif;
+}
+
+.board-container {
+  margin: 20px 0;
+  text-align: center;
+}
+
+.board {
+  position: relative;
+  margin: 0 auto;
+}
+
+.tile {
+  background: #ddd;
+  cursor: pointer;
+  font-size: 2vmin;
+  font-weight: 600;
+  position: absolute;
+  text-align: center;
+  transition: all 100ms ease-out;
+  vertical-align: top;
+}
+
+.tile.null {
+  cursor: default;
+  background: transparent;
+}
+
+.message {
+  padding: 10px;
+  text-align: center;
+}
