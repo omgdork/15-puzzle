@@ -8,14 +8,56 @@ html, body {
   font: normal 14px/1.4 'Segoe UI', 'Helvetica', 'Arial', sans-serif;
 }
 
+.container {
+  padding: 0 20px;
+}
+
+.field {
+  display: flex;
+  margin: 5px 0;
+}
+
+.field label {
+  flex: 0 0 120px;
+  font-weight: bold;
+  padding: 10px;
+}
+
+.field input {
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 10px;
+}
+
+.field input[type=number] {
+  width: 50px;
+}
+
+.btn {
+  background: #eee;
+  border: 2px solid #ddd;
+  border-radius: 5px;
+  color: #333;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 5px 10px;
+}
+
 .board-container {
+  border-bottom: 1px solid #eee;
   margin: 20px 0;
+  padding: 0 0 20px;
   text-align: center;
+}
+
+.board-container:last-child {
+  border: 0;
+  margin: 20px 0 0;
 }
 
 .board {
   position: relative;
-  margin: 0 auto;
 }
 
 .tile {
@@ -35,6 +77,17 @@ html, body {
 }
 
 .message {
+  display: none;
+}
+
+.message.shown {
+  background: #eee;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  color: #1a531b;
+  display: block;
+  font-size: 20px;
+  font-weight: 600;
+  margin: 10px 0;
   padding: 10px;
-  text-align: center;
 }

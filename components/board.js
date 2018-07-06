@@ -21,7 +21,7 @@ export default class Board {
 
     do {
       tileOrder = Utilities.shuffle(tileOrder);
-    } while (!this.isSolvable(tileOrder));
+    } while (!this.isSolvable(tileOrder, this.size));
 
     this.tiles = tileOrder.map((v, i, arr) => {
       // The highest value is the blank tile.
@@ -71,7 +71,15 @@ export default class Board {
       [tile.column, blankTile.column] = [blankTile.column, tile.column];
       tile.move();
       blankTile.move();
-      this.element.querySelector('.message').innerText = this.isSolved() ? 'Yazzzzz!' : '';
+
+      const message = this.element.querySelector('.message');
+      if (this.isSolved()) {
+        message.innerText = 'Yazzzzz!';
+        message.classList.add('shown');
+      } else {
+        message.classList.remove('shown');
+        message.innerText = '';
+      }
     } else {
       console.log(`Can't move the tile yo.`);
     }
@@ -95,39 +103,53 @@ export default class Board {
     this.element.appendChild(frag);
   }
 
-  // TODO: Fix!
-  // From https://stackoverflow.com/a/34570524/769326
+  // From https://www.cs.bham.ac.uk/~mdr/teaching/modules04/java2/TilesSolvability.html
   /**
    * Checks if the given tile order is solvable.
    * @param {[number]} tileOrder - An array consisting of shuffled numbers.
+   * @param {number} size - The number of columns the puzzle has.
    * @returns {boolean} Boolean value indicating if the shuffled array is solvable or not.
    */
-  isSolvable(tileOrder) {
-    const blankIndex = tileOrder.indexOf(tileOrder.length);
-    const blankRow = Math.floor(blankIndex/this.size);
-    let parity = 0;
+  isSolvable(tileOrder, size) {
+    const rows = Math.ceil(tileOrder.length / size);
+    const blankTileRowNumberFromBottom = rows - Math.floor(tileOrder.indexOf(0) / rows); // "...row counting from the bottom (last, third-last, fifth-last etc)"
+    let inversions = 0;
 
-    for (let i = 0, length = tileOrder.length; i < length; i++) {
-      for (let j = i + 1; j < length; j++) {
-        if (tileOrder[i] > tileOrder[j] && tileOrder[j] !== 0) {
-          parity++;
-        }
+    // "An inversion is when a tile precedes another tile with a lower number on it. The
+    // solution state has zero inversions. ...an inversion is a pair of tiles (a, b) such
+    // that a appears before b, but a > b"
+    tileOrder.forEach((num, i, arr) => {
+      if (num > 0 && i + 1 < arr.length) {
+        const succeedingNumbers = arr.slice(i + 1);
+
+        succeedingNumbers.forEach((succeeding) => {
+          if (succeeding > 0 && succeeding < num) {
+            inversions++;
+          }
+        })
       }
+    });
+
+    // Don't present a solved state.
+    if (inversions === 0) {
+      return false;
     }
 
-    // Even grid
-    if (this.size % 2 === 0) {
-      // Blank on odd row; counting from bottom.
-      if (blankRow % 2 !== 0) {
-        return parity % 2 === 0;
-      }
-      
-      // Blank on even row; counting from bottom.
-      return parity % 2 !== 0;
+    // "The formula says:
+    // a. If the grid width is odd, then the number of inversions in a solvable situation is even.
+    if (size % 2 !== 0) {
+      return inversions % 2 === 0;
     }
 
-    // Odd grid
-    return parity % 2 === 0;
+    // b. If the grid width is even, and the blank is on an even row counting from the bottom
+    // (second-last, fourth-last etc), then the number of inversions in a solvable situation is odd.
+    if (blankTileRowNumberFromBottom % 2 === 0) {
+      return inversions % 2 !== 0;
+    }
+
+    // c. If the grid width is even, and the blank is on an odd row counting from the bottom
+    // (last, third-last, fifth-last etc) then the number of inversions in a solvable situation is even."
+    return inversions % 2 === 0;
   }
 
   /**

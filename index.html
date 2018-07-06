@@ -6,9 +6,17 @@
   </head>
   <body>
     <div class="container">
-      <input id="txt-board-size" type="text">
-      <input id="txt-tile-size" type="text">
-      <button id="btn-add">Add Board</button>
+      <form>
+        <div class="field">
+          <label for="txt-board-size">Board Size</label>
+          <input type="number" id="txt-board-size">
+        </div>
+        <div class="field">
+          <label for="txt-tile-size">Tile Size</label>
+          <input type="number" id="txt-tile-size">
+        </div>
+        <button type="button" id="btn-add" class="btn">Add Board</button>
+      </form>
     </div>
     <script src="/utilities/utilities.js" type="module"></script>
     <script src="/components/tile.js" type="module"></script>
