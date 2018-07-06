@@ -22,7 +22,7 @@ export default class Tile {
     }
 
     // Make the tile square.
-    const tileWidth = `calc(${this.width}vmin - 10px)`; // 10px is for the margin (5px on either side)
+    const tileWidth = `calc(${this.width}px - 10px)`; // 10px is for the margin (5px on either side)
     this.element.style = `
       height: ${tileWidth};
       line-height: ${tileWidth};
@@ -37,12 +37,13 @@ export default class Tile {
    * Moves the tile element to its latest coordinates.
    */
   move() {
-    this.element.style.top = `calc(${this.row * this.width}vmin + 5px)`;
-    this.element.style.left = `calc(${this.column * this.width}vmin + 5px)`;
+    this.element.style.top = `calc(${this.row * this.width}px + 5px)`;
+    this.element.style.left = `calc(${this.column * this.width}px + 5px)`;
   }
 
   disable() {
     this.element.removeEventListener('click', this);
+    this.element.classList.add('disabled');
   }
 
   handleEvent(e) {

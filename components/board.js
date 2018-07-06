@@ -2,7 +2,7 @@ import Utilities from '../utilities/utilities.js';
 import Tile from './tile.js';
 
 export default class Board {
-  constructor(size = 4, tileWidth = 20) {
+  constructor(size = 4, tileWidth = 100) {
     this.size = size;
     this.tileWidth = tileWidth;
     this.tiles = [];
@@ -23,7 +23,7 @@ export default class Board {
       tileOrder = Utilities.shuffle(tileOrder);
     } while (!this.isSolvable(tileOrder, this.size));
 
-    this.tiles = tileOrder.map((v, i, arr) => {
+    this.tiles = tileOrder.map((v) => {
       // The highest value is the blank tile.
       const tile = new Tile({
         value: v === tileCount ? 0 : v,
@@ -91,7 +91,7 @@ export default class Board {
     this.element = document.createElement('div');
     const range = document.createRange();
     const template = `
-      <div class="board" style="height: ${this.tileWidth * this.size}vmin; width: ${this.tileWidth * this.size}vmin;"></div>
+      <div class="board" style="height: ${this.tileWidth * this.size}px; width: ${this.tileWidth * this.size}px;"></div>
       <p class="message"></p>
     `;
     const frag = range.createContextualFragment(template);

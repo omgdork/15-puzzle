@@ -8,12 +8,12 @@
     <div class="container">
       <form>
         <div class="field">
-          <label for="txt-board-size">Board Size</label>
-          <input type="number" id="txt-board-size">
+          <label for="txt-board-size">Board Size (columns)</label>
+          <input type="number" id="txt-board-size" min="2" placeholder="Minimum size is 2" oninput="validity.valid || (value='')">
         </div>
         <div class="field">
-          <label for="txt-tile-size">Tile Size</label>
-          <input type="number" id="txt-tile-size">
+          <label for="txt-tile-size">Tile Size (px)</label>
+          <input type="number" id="txt-tile-size" min="30" placeholder="Minimum size is 30" oninput="validity.valid || (value='')">
         </div>
         <button type="button" id="btn-add" class="btn">Add Board</button>
       </form>

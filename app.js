@@ -8,9 +8,9 @@ const txtTileSize = document.getElementById('txt-tile-size');
 const btnAdd = document.getElementById('btn-add');
 
 btnAdd.addEventListener('click', () => {
-  const boardSize = parseInt(txtBoardSize.value, 10);
-  const tileSize = parseInt(txtTileSize.value, 10);
-  const newBoard = new Board(isNaN(boardSize) ? 4 : boardSize, isNaN(tileSize) ? 20 : tileSize);
+  const boardSize = parseInt(txtBoardSize.value || 4, 10);
+  const tileSize = parseInt(txtTileSize.value || 100, 10);
+  const newBoard = new Board(boardSize, tileSize);
 
   container.appendChild(newBoard.element);
 });

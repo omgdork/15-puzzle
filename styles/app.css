@@ -13,6 +13,7 @@ html, body {
 }
 
 .field {
+  align-items: center;
   display: flex;
   margin: 5px 0;
 }
@@ -30,7 +31,7 @@ html, body {
 }
 
 .field input[type=number] {
-  width: 50px;
+  width: 150px;
 }
 
 .btn {
@@ -72,8 +73,12 @@ html, body {
 }
 
 .tile.null {
-  cursor: default;
   background: transparent;
+}
+
+.tile.disabled,
+.tile.null {
+  cursor: default;
 }
 
 .message {
