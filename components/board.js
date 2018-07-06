@@ -2,8 +2,9 @@ import Utilities from '../utilities/utilities.js';
 import Tile from './tile.js';
 
 export default class Board {
-  constructor(size = 4, tileWidth = 100) {
-    this.size = size;
+  constructor(columns = 4, rows = 4, tileWidth = 100) {
+    this.columns = columns;
+    this.rows = rows;
     this.tileWidth = tileWidth;
     this.tiles = [];
     this.initBoard();
@@ -14,14 +15,14 @@ export default class Board {
    * and then generates the board.
    */
   initBoard() {
-    const tileCount = Math.pow(this.size, 2);
+    const tileCount = this.columns * this.rows;
     let currentRow = 0;
     let currentColumn = 0;
-    let tileOrder = Array.from({ length: tileCount}, (v, k) => k);
+    let tileOrder = Array.from({ length: tileCount }, (v, k) => k + 1); // Array starting from 1 to n. //k);
 
     do {
       tileOrder = Utilities.shuffle(tileOrder);
-    } while (!this.isSolvable(tileOrder, this.size));
+    } while (!this.isSolvable(tileOrder, this.columns, this.rows));
 
     this.tiles = tileOrder.map((v) => {
       // The highest value is the blank tile.
@@ -34,7 +35,7 @@ export default class Board {
       });
 
       // Set the row and column indices for the next tile.
-      if (currentColumn === this.size - 1) {
+      if (currentColumn === this.columns - 1) {
         currentRow++;
         currentColumn = 0;
       } else {
@@ -91,7 +92,7 @@ export default class Board {
     this.element = document.createElement('div');
     const range = document.createRange();
     const template = `
-      <div class="board" style="height: ${this.tileWidth * this.size}px; width: ${this.tileWidth * this.size}px;"></div>
+      <div class="board" style="height: ${this.tileWidth * this.rows}px; width: ${this.tileWidth * this.columns}px;"></div>
       <p class="message"></p>
     `;
     const frag = range.createContextualFragment(template);
@@ -106,11 +107,39 @@ export default class Board {
   /**
    * Checks if the given tile order is solvable.
    * @param {[number]} tileOrder - An array consisting of shuffled numbers.
-   * @param {number} size - The number of columns the puzzle has.
+   * @param {number} columns - The number of columns the puzzle has.
+   * @param {number} rows - The number of rows the puzzle has.
    * @returns {boolean} Boolean value indicating if the shuffled array is solvable or not.
    */
-  isSolvable(tileOrder, size) {
-    const rows = Math.ceil(tileOrder.length / size);
+  isSolvable(tileOrder, columns, rows) {
+    const blankTileIndex = tileOrder.indexOf(tileOrder.length);
+    const blankTileCoords = {
+      column: Math.floor(blankTileIndex / columns), 
+      row: Math.floor(blankTileIndex / rows),
+    };
+    let inversions = 0;
+
+    // When you count inversions, pretend the empty space is a tile with a higher number than any others.
+    tileOrder.forEach((num, i, arr) => {
+      const succeedingNumbers = arr.slice(i + 1);
+
+      succeedingNumbers.forEach((succeeding) => {
+        if (succeeding < num) {
+          inversions++;
+        }
+      });
+    });
+
+    // Count the distance between the empty space and the lower-right cell, following the grid lines.
+    // For example in a 15-puzzle with the empty space at the far upper left this distance would be 6
+    // because you need to go 3 right, 3 down.
+    const blankToLowerRightCellDistance = (columns - (blankTileCoords.column + 1)) + (rows - (blankTileCoords.row + 1));
+
+    // The configuration is solvable if and only if the number of inversions plus the empty-space
+    // distance from the lower right is an even number.
+    return inversions + blankToLowerRightCellDistance % 2 === 0;
+
+    /*
     const blankTileRowNumberFromBottom = rows - Math.floor(tileOrder.indexOf(0) / rows); // "...row counting from the bottom (last, third-last, fifth-last etc)"
     let inversions = 0;
 
@@ -136,7 +165,7 @@ export default class Board {
 
     // "The formula says:
     // a. If the grid width is odd, then the number of inversions in a solvable situation is even.
-    if (size % 2 !== 0) {
+    if (columns % 2 !== 0) {
       return inversions % 2 === 0;
     }
 
@@ -149,6 +178,7 @@ export default class Board {
     // c. If the grid width is even, and the blank is on an odd row counting from the bottom
     // (last, third-last, fifth-last etc) then the number of inversions in a solvable situation is even."
     return inversions % 2 === 0;
+    */
   }
 
   /**
@@ -158,8 +188,8 @@ export default class Board {
   isSolved() {
     return !this.tiles.some((tile, i, arr) => {
       const tileValue = tile.value || arr.length; // Set the blank tile's value as the last item.
-      const rowShouldBe = parseInt((tileValue - 1) / this.size, 10);
-      const columnShouldBe = (tileValue - 1) % this.size;
+      const rowShouldBe = (tileValue - 1) / this.columns;
+      const columnShouldBe = (tileValue - 1) % this.rows;
       const isCorrect = rowShouldBe === tile.row && columnShouldBe === tile.column;
 
       return !isCorrect;
