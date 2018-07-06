@@ -30,7 +30,6 @@ export default class Board {
         row: currentRow,
         column: currentColumn,
         width: this.tileWidth,
-        //clickHandler: (value) => this.clickHandler(value),
         clickHandler: this.clickHandler.bind(this),
       });
 
@@ -73,14 +72,12 @@ export default class Board {
       tile.move();
       blankTile.move();
 
-      const message = this.element.querySelector('.message');
+      
       if (this.isSolved()) {
+        const message = this.element.querySelector('.message');
         message.innerText = 'Yazzzzz!';
         message.classList.add('shown');
         this.tiles.forEach((tile) => tile.disable());
-      } else {
-        message.classList.remove('shown');
-        message.innerText = '';
       }
     } else {
       console.log(`Can't move the tile yo.`);
@@ -161,8 +158,8 @@ export default class Board {
   isSolved() {
     return !this.tiles.some((tile, i, arr) => {
       const tileValue = tile.value || arr.length; // Set the blank tile's value as the last item.
-      const rowShouldBe = parseInt((tileValue - 1)/this.size, 10);
-      const columnShouldBe = (tileValue - 1)%this.size;
+      const rowShouldBe = parseInt((tileValue - 1) / this.size, 10);
+      const columnShouldBe = (tileValue - 1) % this.size;
       const isCorrect = rowShouldBe === tile.row && columnShouldBe === tile.column;
 
       return !isCorrect;
