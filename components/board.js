@@ -30,7 +30,8 @@ export default class Board {
         row: currentRow,
         column: currentColumn,
         width: this.tileWidth,
-        clickHandler: (value) => this.clickHandler(value),
+        //clickHandler: (value) => this.clickHandler(value),
+        clickHandler: this.clickHandler.bind(this),
       });
 
       // Set the row and column indices for the next tile.
@@ -76,6 +77,7 @@ export default class Board {
       if (this.isSolved()) {
         message.innerText = 'Yazzzzz!';
         message.classList.add('shown');
+        this.tiles.forEach((tile) => tile.disable());
       } else {
         message.classList.remove('shown');
         message.innerText = '';
