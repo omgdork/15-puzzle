@@ -1,10 +1,9 @@
 export default class Tile {
-  constructor({ value, row, column, width, clickHandler }) {
+  constructor({ value, row, column, width }) {
     this.value = value;
     this.row = row;
     this.column = column;
     this.width = width;
-    this.clickHandler = clickHandler;
     this.generateTileElement();
   }
 
@@ -13,6 +12,7 @@ export default class Tile {
    */
   generateTileElement() {
     this.element = document.createElement('div');
+    this.element.dataset.value = this.value;
     this.element.classList.add('tile');
     
     if (this.value === 0) {
@@ -29,7 +29,6 @@ export default class Tile {
       width: ${tileWidth};
     `;
 
-    this.element.addEventListener('click', this);
     this.move();
   }
 
@@ -39,20 +38,5 @@ export default class Tile {
   move() {
     this.element.style.top = `calc(${this.row * this.width}px + 5px)`;
     this.element.style.left = `calc(${this.column * this.width}px + 5px)`;
-  }
-
-  disable() {
-    this.element.removeEventListener('click', this);
-    this.element.classList.add('disabled');
-  }
-
-  handleEvent(e) {
-    switch (e.type) {
-      case 'click':
-        this.clickHandler(this.value);
-        break;
-      default:
-        // Do nothing.
-    }
   }
 }

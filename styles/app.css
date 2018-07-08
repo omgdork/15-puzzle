@@ -8,7 +8,7 @@ html, body {
   font: normal 14px/1.4 'Segoe UI', 'Helvetica', 'Arial', sans-serif;
 }
 
-.container {
+.app {
   padding: 0 20px;
 }
 
@@ -58,6 +58,8 @@ html, body {
 }
 
 .board {
+  border: 1px solid #eee;
+  border-radius: 5px;
   position: relative;
 }
 
@@ -76,7 +78,7 @@ html, body {
   background: transparent;
 }
 
-.tile.disabled,
+.board.solved .tile,
 .tile.null {
   cursor: default;
 }
