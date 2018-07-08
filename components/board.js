@@ -18,16 +18,16 @@ export default class Board {
     const tileCount = this.columns * this.rows;
     let currentRow = 0;
     let currentColumn = 0;
-    let tileOrder = Array.from({ length: tileCount }, (v, k) => k + 1); // Array starting from 1 to n. //k);
+    let tileOrder = Array.from({ length: tileCount }, (v, k) => k + 1); // Array starting from 1 to n.
 
     do {
       tileOrder = Utilities.shuffle(tileOrder);
     } while (!this.isSolvable(tileOrder, this.columns, this.rows));
 
-    this.tiles = tileOrder.map((v) => {
+    this.tiles = tileOrder.map((v, i, arr) => {
       // The highest value is the blank tile.
       const tile = new Tile({
-        value: v === tileCount ? 0 : v,
+        value: v === arr.length ? 0 : v,
         row: currentRow,
         column: currentColumn,
         width: this.tileWidth,
@@ -112,42 +112,14 @@ export default class Board {
    * @returns {boolean} Boolean value indicating if the shuffled array is solvable or not.
    */
   isSolvable(tileOrder, columns, rows) {
-    const blankTileIndex = tileOrder.indexOf(tileOrder.length);
-    const blankTileCoords = {
-      column: Math.floor(blankTileIndex / columns), 
-      row: Math.floor(blankTileIndex / rows),
-    };
-    let inversions = 0;
-
-    // When you count inversions, pretend the empty space is a tile with a higher number than any others.
-    tileOrder.forEach((num, i, arr) => {
-      const succeedingNumbers = arr.slice(i + 1);
-
-      succeedingNumbers.forEach((succeeding) => {
-        if (succeeding < num) {
-          inversions++;
-        }
-      });
-    });
-
-    // Count the distance between the empty space and the lower-right cell, following the grid lines.
-    // For example in a 15-puzzle with the empty space at the far upper left this distance would be 6
-    // because you need to go 3 right, 3 down.
-    const blankToLowerRightCellDistance = (columns - (blankTileCoords.column + 1)) + (rows - (blankTileCoords.row + 1));
-
-    // The configuration is solvable if and only if the number of inversions plus the empty-space
-    // distance from the lower right is an even number.
-    return inversions + blankToLowerRightCellDistance % 2 === 0;
-
-    /*
-    const blankTileRowNumberFromBottom = rows - Math.floor(tileOrder.indexOf(0) / rows); // "...row counting from the bottom (last, third-last, fifth-last etc)"
+    const blankTileRowNumberFromBottom = rows - Math.floor(tileOrder.indexOf(tileOrder.length) / rows); // "...row counting from the bottom (last, third-last, fifth-last etc)"
     let inversions = 0;
 
     // "An inversion is when a tile precedes another tile with a lower number on it. The
     // solution state has zero inversions. ...an inversion is a pair of tiles (a, b) such
     // that a appears before b, but a > b"
     tileOrder.forEach((num, i, arr) => {
-      if (num > 0 && i + 1 < arr.length) {
+      if (num < arr.length && i + 1 < arr.length) {
         const succeedingNumbers = arr.slice(i + 1);
 
         succeedingNumbers.forEach((succeeding) => {
@@ -178,7 +150,6 @@ export default class Board {
     // c. If the grid width is even, and the blank is on an odd row counting from the bottom
     // (last, third-last, fifth-last etc) then the number of inversions in a solvable situation is even."
     return inversions % 2 === 0;
-    */
   }
 
   /**
@@ -188,9 +159,9 @@ export default class Board {
   isSolved() {
     return !this.tiles.some((tile, i, arr) => {
       const tileValue = tile.value || arr.length; // Set the blank tile's value as the last item.
-      const rowShouldBe = (tileValue - 1) / this.columns;
-      const columnShouldBe = (tileValue - 1) % this.rows;
-      const isCorrect = rowShouldBe === tile.row && columnShouldBe === tile.column;
+      const correctRow = Math.ceil(tileValue / this.columns) - 1;
+      const correctColumn = (tileValue - 1) % this.columns;
+      const isCorrect = tile.row === correctRow && tile.column === correctColumn;
 
       return !isCorrect;
     });
