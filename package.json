@@ -4,7 +4,7 @@
   "description": "JavaScript 15 puzzle.",
   "main": "app.js",
   "scripts": {
-    "start": "node node_modules/http-server/bin/http-server -p 3000 -o",
+    "start": "node node_modules/http-server/bin/http-server -p 3000 --offline -a localhost -o",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",

@@ -2,8 +2,9 @@ import Utilities from '../utilities/utilities.js';
 import Tile from './tile.js';
 
 export default class Board {
-  constructor(size = 4, tileWidth = 100) {
-    this.size = size;
+  constructor(columns = 4, rows = 4, tileWidth = 100) {
+    this.columns = columns;
+    this.rows = rows;
     this.tileWidth = tileWidth;
     this.tiles = [];
     this.initBoard();
@@ -14,19 +15,19 @@ export default class Board {
    * and then generates the board.
    */
   initBoard() {
-    const tileCount = Math.pow(this.size, 2);
+    const tileCount = this.columns * this.rows;
     let currentRow = 0;
     let currentColumn = 0;
-    let tileOrder = Array.from({ length: tileCount}, (v, k) => k);
+    let tileOrder = Array.from({ length: tileCount }, (v, k) => k + 1); // Array starting from 1 to n.
 
     do {
       tileOrder = Utilities.shuffle(tileOrder);
-    } while (!this.isSolvable(tileOrder, this.size));
+    } while (!this.isSolvable(tileOrder, this.columns, this.rows));
 
-    this.tiles = tileOrder.map((v) => {
+    this.tiles = tileOrder.map((v, i, arr) => {
       // The highest value is the blank tile.
       const tile = new Tile({
-        value: v === tileCount ? 0 : v,
+        value: v === arr.length ? 0 : v,
         row: currentRow,
         column: currentColumn,
         width: this.tileWidth,
@@ -34,7 +35,7 @@ export default class Board {
       });
 
       // Set the row and column indices for the next tile.
-      if (currentColumn === this.size - 1) {
+      if (currentColumn === this.columns - 1) {
         currentRow++;
         currentColumn = 0;
       } else {
@@ -91,7 +92,7 @@ export default class Board {
     this.element = document.createElement('div');
     const range = document.createRange();
     const template = `
-      <div class="board" style="height: ${this.tileWidth * this.size}px; width: ${this.tileWidth * this.size}px;"></div>
+      <div class="board" style="height: ${this.tileWidth * this.rows}px; width: ${this.tileWidth * this.columns}px;"></div>
       <p class="message"></p>
     `;
     const frag = range.createContextualFragment(template);
@@ -106,19 +107,19 @@ export default class Board {
   /**
    * Checks if the given tile order is solvable.
    * @param {[number]} tileOrder - An array consisting of shuffled numbers.
-   * @param {number} size - The number of columns the puzzle has.
+   * @param {number} columns - The number of columns the puzzle has.
+   * @param {number} rows - The number of rows the puzzle has.
    * @returns {boolean} Boolean value indicating if the shuffled array is solvable or not.
    */
-  isSolvable(tileOrder, size) {
-    const rows = Math.ceil(tileOrder.length / size);
-    const blankTileRowNumberFromBottom = rows - Math.floor(tileOrder.indexOf(0) / rows); // "...row counting from the bottom (last, third-last, fifth-last etc)"
+  isSolvable(tileOrder, columns, rows) {
+    const blankTileRowNumberFromBottom = rows - Math.floor(tileOrder.indexOf(tileOrder.length) / rows); // "...row counting from the bottom (last, third-last, fifth-last etc)"
     let inversions = 0;
 
     // "An inversion is when a tile precedes another tile with a lower number on it. The
     // solution state has zero inversions. ...an inversion is a pair of tiles (a, b) such
     // that a appears before b, but a > b"
     tileOrder.forEach((num, i, arr) => {
-      if (num > 0 && i + 1 < arr.length) {
+      if (num < arr.length && i + 1 < arr.length) {
         const succeedingNumbers = arr.slice(i + 1);
 
         succeedingNumbers.forEach((succeeding) => {
@@ -136,7 +137,7 @@ export default class Board {
 
     // "The formula says:
     // a. If the grid width is odd, then the number of inversions in a solvable situation is even.
-    if (size % 2 !== 0) {
+    if (columns % 2 !== 0) {
       return inversions % 2 === 0;
     }
 
@@ -158,9 +159,9 @@ export default class Board {
   isSolved() {
     return !this.tiles.some((tile, i, arr) => {
       const tileValue = tile.value || arr.length; // Set the blank tile's value as the last item.
-      const rowShouldBe = parseInt((tileValue - 1) / this.size, 10);
-      const columnShouldBe = (tileValue - 1) % this.size;
-      const isCorrect = rowShouldBe === tile.row && columnShouldBe === tile.column;
+      const correctRow = Math.ceil(tileValue / this.columns) - 1;
+      const correctColumn = (tileValue - 1) % this.columns;
+      const isCorrect = tile.row === correctRow && tile.column === correctColumn;
 
       return !isCorrect;
     });
