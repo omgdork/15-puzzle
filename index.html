@@ -3,9 +3,13 @@
   <head>
     <title>15 Puzzle</title>
     <link rel="stylesheet" href="/styles/app.css">
+    <script src="/utilities/utilities.js" type="module"></script>
+    <script src="/components/tile.js" type="module"></script>
+    <script src="/components/board.js" type="module"></script>
+    <script src="app.js" type="module"></script>
   </head>
   <body>
-    <div class="container">
+    <div class="app">
       <form>
         <div class="field">
           <label for="txt-columns">Columns</label>
@@ -22,9 +26,5 @@
         <button type="button" id="btn-add" class="btn">Add Board</button>
       </form>
     </div>
-    <script src="/utilities/utilities.js" type="module"></script>
-    <script src="/components/tile.js" type="module"></script>
-    <script src="/components/board.js" type="module"></script>
-    <script src="app.js" type="module"></script>
   </body>
 </html>

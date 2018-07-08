@@ -1,4 +1,16 @@
 export default class Utilities {
+  /**
+   * Runs a function when the page is ready.
+   * @param {function} fn - The function to run when the page is ready.
+   */
+  static ready(fn) {
+    if (document.attachEvent ? document.readyState === 'complete' : document.readyState !== 'loading') {
+      fn();
+    } else {
+      document.addEventListener('DOMContentLoaded', fn);
+    }
+  }
+
   // From https://stackoverflow.com/a/6274381
   /**
    * Shuffles array in place. ES6 version

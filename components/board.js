@@ -7,6 +7,7 @@ export default class Board {
     this.rows = rows;
     this.tileWidth = tileWidth;
     this.tiles = [];
+    this.clickHandler = this.clickHandler.bind(this);
     this.initBoard();
   }
 
@@ -31,7 +32,6 @@ export default class Board {
         row: currentRow,
         column: currentColumn,
         width: this.tileWidth,
-        clickHandler: this.clickHandler.bind(this),
       });
 
       // Set the row and column indices for the next tile.
@@ -46,61 +46,6 @@ export default class Board {
     });
     
     this.generateBoard();
-  }
-
-  /**
-   * Moves a clicked tile if possible.
-   * @param {number} value - The tile value (order).
-   */
-  clickHandler(value) {
-    if (!value) {
-      return;
-    }
-
-    const tile = this.tiles.find((tile) => tile.value === value);
-    const blankTile = this.tiles.find((tile) => tile.value === 0);
-
-    // Check if the tile is adjacent to the blank tile.
-    if ((tile.row === blankTile.row // Same row.
-        && (tile.column === blankTile.column - 1 // Blank tile on the right.
-          || tile.column === blankTile.column + 1)) // On the left.
-      || (tile.column === blankTile.column // Same column.
-        && (tile.row === blankTile.row - 1 // On top.
-          || tile.row === blankTile.row + 1))) { // Down below.
-      // If it is, switch coordinates.
-      [tile.row, blankTile.row] = [blankTile.row, tile.row];
-      [tile.column, blankTile.column] = [blankTile.column, tile.column];
-      tile.move();
-      blankTile.move();
-
-      
-      if (this.isSolved()) {
-        const message = this.element.querySelector('.message');
-        message.innerText = 'Yazzzzz!';
-        message.classList.add('shown');
-        this.tiles.forEach((tile) => tile.disable());
-      }
-    } else {
-      console.log(`Can't move the tile yo.`);
-    }
-  }
-
-  /**
-   * Adds a new board to the document body.
-   */
-  generateBoard() {
-    this.element = document.createElement('div');
-    const range = document.createRange();
-    const template = `
-      <div class="board" style="height: ${this.tileWidth * this.rows}px; width: ${this.tileWidth * this.columns}px;"></div>
-      <p class="message"></p>
-    `;
-    const frag = range.createContextualFragment(template);
-    const board = frag.querySelector('.board');
-
-    this.element.classList.add('board-container');
-    this.tiles.forEach((tile) => board.appendChild(tile.element));
-    this.element.appendChild(frag);
   }
 
   // From https://www.cs.bham.ac.uk/~mdr/teaching/modules04/java2/TilesSolvability.html
@@ -150,6 +95,70 @@ export default class Board {
     // c. If the grid width is even, and the blank is on an odd row counting from the bottom
     // (last, third-last, fifth-last etc) then the number of inversions in a solvable situation is even."
     return inversions % 2 === 0;
+  }
+
+  /**
+   * Adds a new board to the document body.
+   */
+  generateBoard() {
+    this.element = document.createElement('div');
+    const range = document.createRange();
+    const template = `
+      <div class="board" style="height: ${this.tileWidth * this.rows}px; width: ${this.tileWidth * this.columns}px;"></div>
+      <p class="message"></p>
+    `;
+    const frag = range.createContextualFragment(template);
+    const board = frag.querySelector('.board');
+
+    board.addEventListener('click', this.clickHandler);
+    this.element.classList.add('board-container');
+    this.tiles.forEach((tile) => board.appendChild(tile.element));
+    this.element.appendChild(frag);
+  }
+
+   /**
+   * Moves a clicked tile if possible.
+   * @param {EventListenerObject} e - The event listener object.
+   */
+  clickHandler(e) {
+    const target = e.target;
+
+    if (target.classList.contains('tile')) {
+      const value = parseInt(target.dataset.value, 10);
+
+      if (!value) {
+        return;
+      }
+  
+      const tile = this.tiles.find((tile) => tile.value === value);
+      const blankTile = this.tiles.find((tile) => tile.value === 0);
+  
+      // Check if the tile is adjacent to the blank tile.
+      if ((tile.row === blankTile.row // Same row.
+          && (tile.column === blankTile.column - 1 // Blank tile on the right.
+            || tile.column === blankTile.column + 1)) // On the left.
+        || (tile.column === blankTile.column // Same column.
+          && (tile.row === blankTile.row - 1 // On top.
+            || tile.row === blankTile.row + 1))) { // Down below.
+        // If it is, switch coordinates.
+        [tile.row, blankTile.row] = [blankTile.row, tile.row];
+        [tile.column, blankTile.column] = [blankTile.column, tile.column];
+        tile.move();
+        blankTile.move();
+  
+        if (this.isSolved()) {
+          const message = this.element.querySelector('.message');
+          message.innerText = 'Yazzzzz!';
+          message.classList.add('shown');
+
+          const board = this.element.querySelector('.board');
+          board.removeEventListener('click', this.clickHandler);
+          board.classList.add('solved');
+        }
+      } else {
+        console.log(`Can't move the tile yo.`);
+      }
+    }
   }
 
   /**
