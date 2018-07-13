@@ -36,7 +36,8 @@ export default class Tile {
    * Moves the tile element to its latest coordinates.
    */
   move() {
-    this.element.style.top = `calc(${this.row * this.width}px + 5px)`;
-    this.element.style.left = `calc(${this.column * this.width}px + 5px)`;
+    // this.element.style.top = `calc(${this.row * this.width}px + 5px)`;
+    // this.element.style.left = `calc(${this.column * this.width}px + 5px)`;
+    this.element.style.transform = `translate(calc(${this.column * this.width}px + 5px), calc(${this.row * this.width}px + 5px))`;
   }
 }
