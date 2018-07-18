@@ -1,3 +1,20 @@
+export default class Tile {
+  constructor({ value, row, column, width }) {
+    this.value = value;
+    this.row = row;
+    this.column = column;
+    this.width = width;
+    generateTileElement.call(this);
+  }
+
+  /**
+   * Moves the tile element to its latest coordinates.
+   */
+  move() {
+    this.element.style.transform = `translate(calc(${this.column * this.width}px + 5px), calc(${this.row * this.width}px + 5px))`;
+  }
+}
+
 /**
  * Generates the tile element.
  */
@@ -21,22 +38,4 @@ function generateTileElement() {
   `;
 
   this.move();
-}
-
-export default class Tile {
-  constructor({ value, row, column, width }) {
-    this.value = value;
-    this.row = row;
-    this.column = column;
-    this.width = width;
-    generateTileElement.call(this);
-  }
-
-  /**
-   * Moves the tile element to its latest coordinates.
-   */
-  move() {
-    this.element.style.top = `calc(${this.row * this.width}px + 5px)`;
-    this.element.style.left = `calc(${this.column * this.width}px + 5px)`;
-  }
 }

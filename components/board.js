@@ -1,6 +1,19 @@
 import Utilities from '../utilities/utilities.js';
 import Tile from './tile.js';
 
+export default class Board {
+  constructor(columns = 4, rows = 4, tileWidth = 100) {
+    this.columns = columns;
+    this.rows = rows;
+    this.tileWidth = tileWidth;
+    this.tiles = [];
+    this.correctTileCount = 0;
+    this.clickHandler = clickHandler.bind(this);
+    this.arrowPressHandler = arrowPressHandler.bind(this);
+    initBoard.call(this);
+  }
+}
+
 /**
  * Shuffles an array of n items until it can be solved
  * and then generates the board.
@@ -10,6 +23,8 @@ function initBoard() {
   let currentRow = 0;
   let currentColumn = 0;
   let tileOrder = Array.from({ length: tileCount }, (v, k) => k + 1); // Array starting from 1 to n.
+
+  this.correctTileCount = tileCount;
 
   do {
     tileOrder = Utilities.shuffle(tileOrder);
@@ -23,6 +38,12 @@ function initBoard() {
       column: currentColumn,
       width: this.tileWidth,
     });
+
+    // Check if the tile is in the correct position. If it's not,
+    // decrement the correctTileCount.
+    if (!isTileInCorrectPosition.call(this, tile)) {
+      this.correctTileCount--;
+    }
 
     // Set the row and column indices for the next tile.
     if (currentColumn === this.columns - 1) {
@@ -43,6 +64,7 @@ function initBoard() {
  */
 function generateBoard() {
   this.element = document.createElement('div');
+  this.element.tabIndex = -1; // So the element can be focused on on click.
   const range = document.createRange();
   const template = `
     <div class="board" style="height: ${this.tileWidth * this.rows}px; width: ${this.tileWidth * this.columns}px;"></div>
@@ -55,6 +77,125 @@ function generateBoard() {
   this.element.classList.add('board-container');
   this.tiles.forEach((tile) => board.appendChild(tile.element));
   this.element.appendChild(frag);
+  this.element.addEventListener('keydown', this.arrowPressHandler);
+}
+
+/**
+ * Moves a clicked tile if possible.
+ * @param {EventListenerObject} e - The event listener object.
+ */
+function clickHandler(e) {
+  const board = e.currentTarget;
+  const target = e.target;
+
+  if (board) {
+    board.focus();
+  }
+
+  if (target.classList.contains('tile')) {
+    const value = parseInt(target.dataset.value, 10);
+
+    if (!value) {
+      return;
+    }
+
+    const tile = this.tiles.find((tile) => tile.value === value);
+    const blankTile = this.tiles.find((tile) => tile.value === 0);
+
+    if (isTileMovable(blankTile, tile)) {
+      moveTile.call(this, blankTile, tile);
+    }
+  }
+}
+
+/**
+ * Moves a movable tile to the direction specified with an arrow key press.
+ * @param {EventListenerObject} e - The event listener object.
+ */
+function arrowPressHandler(e) {
+  const blankTile = this.tiles.find((tile) => tile.value === 0);
+  let tileToMove;
+
+  switch (e.keyCode) {
+    case 37: // left
+      tileToMove = this.tiles.find((tile) => {
+        return tile.row === blankTile.row && tile.column === blankTile.column + 1;
+      });
+      break;
+    case 38: // up
+      tileToMove = this.tiles.find((tile) => {
+        return tile.row === blankTile.row + 1 && tile.column === blankTile.column;
+      });
+      break;
+    case 39: // right
+      tileToMove = this.tiles.find((tile) => {
+        return tile.row === blankTile.row && tile.column === blankTile.column - 1;
+      });
+      break;
+    case 40: // down
+      tileToMove = this.tiles.find((tile) => {
+        return tile.row === blankTile.row - 1 && tile.column === blankTile.column;
+      });
+      break;
+    default:
+  }
+
+  moveTile.call(this, blankTile, tileToMove);
+}
+
+/**
+ * Checks if the tile is movable.
+ * @param {Tile} blankTile - The blank tile.
+ * @param {Tile} tile - The tile to move.
+ * @returns {boolean} - Boolean value indicating whether the tile is movable or not.
+ */
+function isTileMovable(blankTile, tile) {
+  return ((tile.row === blankTile.row // Same row.
+    && (tile.column === blankTile.column - 1 // Blank tile on the right.
+      || tile.column === blankTile.column + 1)) // On the left.
+  || (tile.column === blankTile.column // Same column.
+    && (tile.row === blankTile.row - 1 // On top.
+      || tile.row === blankTile.row + 1))); // Down below.
+}
+
+/**
+ * Moves the tile.
+ * @param {Tile} blankTile - The blank tile.
+ * @param {Tile} tile - The tile to move.
+ */
+function moveTile(blankTile, tile) {
+  if (tile) {
+    // Check if the selected tile is correctly positioned before moving.
+    const isCorrectPositionBeforeMoving = isTileInCorrectPosition.call(this, tile);
+
+    // Move the selected and blank tiles.
+    [tile.row, blankTile.row] = [blankTile.row, tile.row];
+    [tile.column, blankTile.column] = [blankTile.column, tile.column];
+    tile.move();
+    blankTile.move();
+
+    // Update the correct tile count.
+    const isCorrectPositionAfterMoving = isTileInCorrectPosition.call(this, tile);
+    if (isCorrectPositionAfterMoving) {
+      this.correctTileCount++;
+    } else if (isCorrectPositionBeforeMoving && !isCorrectPositionAfterMoving) {
+      this.correctTileCount--;
+    }
+
+    // Check if the board is solved.
+    if (this.correctTileCount === this.tiles.length - 1) { // Don't bother checking for the blank tile position.
+      const message = this.element.querySelector('.message');
+      message.innerText = 'Yazzzzz!';
+      message.classList.add('shown');
+
+      const board = this.element.querySelector('.board');
+      board.removeEventListener('click', this.clickHandler);
+      this.element.removeEventListener('keydown', this.arrowPressHandler);
+      board.classList.add('solved');
+    }
+  } else {
+    console.log(`Can't move the tile yo.`);
+  }
 }
 
 // From https://www.cs.bham.ac.uk/~mdr/teaching/modules04/java2/TilesSolvability.html
@@ -107,74 +248,15 @@ function isSolvable(tileOrder, columns, rows) {
 }
 
 /**
- * Moves a clicked tile if possible.
- * @param {EventListenerObject} e - The event listener object.
+ * Checks if the tile is in the correct position.
+ * @param {number} value - The tile value. 
+ * @param {number} row - The tile row.
+ * @param {number} column - The tile column.
+ * @returns {boolean} Boolean value indicating whether the tile is in the correct position or not.
  */
-function clickHandler(e) {
-  const target = e.target;
+function isTileInCorrectPosition({ value, row, column }) {
+  const correctRow = Math.ceil(value / this.columns) - 1;
+  const correctColumn = (value - 1) % this.columns;
 
-  if (target.classList.contains('tile')) {
-    const value = parseInt(target.dataset.value, 10);
-
-    if (!value) {
-      return;
-    }
-
-    const tile = this.tiles.find((tile) => tile.value === value);
-    const blankTile = this.tiles.find((tile) => tile.value === 0);
-
-    // Check if the tile is adjacent to the blank tile.
-    if ((tile.row === blankTile.row // Same row.
-        && (tile.column === blankTile.column - 1 // Blank tile on the right.
-          || tile.column === blankTile.column + 1)) // On the left.
-      || (tile.column === blankTile.column // Same column.
-        && (tile.row === blankTile.row - 1 // On top.
-          || tile.row === blankTile.row + 1))) { // Down below.
-      // If it is, switch coordinates.
-      [tile.row, blankTile.row] = [blankTile.row, tile.row];
-      [tile.column, blankTile.column] = [blankTile.column, tile.column];
-      tile.move();
-      blankTile.move();
-
-      if (isSolved(this.tiles, this.columns)) {
-        const message = this.element.querySelector('.message');
-        message.innerText = 'Yazzzzz!';
-        message.classList.add('shown');
-
-        const board = this.element.querySelector('.board');
-        board.removeEventListener('click', this.clickHandler);
-        board.classList.add('solved');
-      }
-    } else {
-      console.log(`Can't move the tile yo.`);
-    }
-  }
-}
-
-/**
- * Checks if the board is solved.
- * @param {[Tile]} tiles - The board's tiles.
- * @param {number} columns - The number of columns the board has.
- * @returns {boolean} Boolean value indicating whether the board is solved or not.
- */
-function isSolved(tiles, columns) {
-  return !tiles.some((tile, i, arr) => {
-    const tileValue = tile.value || arr.length; // Set the blank tile's value as the last item.
-    const correctRow = Math.ceil(tileValue / columns) - 1;
-    const correctColumn = (tileValue - 1) % columns;
-    const isCorrect = tile.row === correctRow && tile.column === correctColumn;
-
-    return !isCorrect;
-  });
-}
-
-export default class Board {
-  constructor(columns = 4, rows = 4, tileWidth = 100) {
-    this.columns = columns;
-    this.rows = rows;
-    this.tileWidth = tileWidth;
-    this.tiles = [];
-    this.clickHandler = clickHandler.bind(this);
-    initBoard.call(this);
-  }
+  return row === correctRow && column === correctColumn;
 }

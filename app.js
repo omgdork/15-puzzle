@@ -18,6 +18,7 @@ import Board from './components/board.js';
       const newBoard = new Board(columns, rows, tileSize);
 
       container.appendChild(newBoard.element);
+      newBoard.element.focus();
     });
   }
 
