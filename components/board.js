@@ -1,13 +1,14 @@
 import Utilities from '../utilities/utilities.js';
-import Tile from './tile.js';
+import { tileFactory } from './tile.js';
 
 export default class Board {
-  constructor(columns = 4, rows = 4, tileWidth = 100) {
+  constructor(columns = 4, rows = 4, tileWidth = 100, boardTileFactory = tileFactory) {
     this.columns = columns;
     this.rows = rows;
     this.tileWidth = tileWidth;
     this.tiles = [];
     this.correctTileCount = 0;
+    this.tileFactory = boardTileFactory;
     this.clickHandler = clickHandler.bind(this);
     this.arrowPressHandler = arrowPressHandler.bind(this);
     initBoard.call(this);
@@ -32,7 +33,7 @@ function initBoard() {
 
   this.tiles = tileOrder.map((v, i, arr) => {
     // The highest value is the blank tile.
-    const tile = new Tile({
+    const tile = this.tileFactory({
       value: v === arr.length ? 0 : v,
       row: currentRow,
       column: currentColumn,

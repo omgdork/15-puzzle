@@ -39,3 +39,11 @@ function generateTileElement() {
 
   this.move();
 }
+
+/**
+ * Returns a new tile. (For unit testing.)
+ * @param {Tile} tile - The tile object.
+ */
+export function tileFactory(tile) {
+  return new Tile(tile);
+}
